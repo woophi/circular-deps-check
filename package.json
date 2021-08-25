@@ -1,6 +1,6 @@
 {
   "name": "circular-deps-check",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Detect circular dependencies in modules",
   "repository": "git@github.com:woophi/circular-deps-check.git",
   "author": "konst <attendentofsky@gmail.com>",
