@@ -16,39 +16,54 @@ class CircularDependencyPlugin {
       onDetected: options.onDetected ?? noop,
       exclude: options.exclude ?? new RegExp('$^'),
       include: options.include ?? new RegExp('.*'),
-      cwd: options.cwd ?? process.cwd()
+      cwd: options.cwd ?? process.cwd(),
+      disableLogs: options.disableLogs ?? true,
+      webpackHook: options.webpackHook ?? 'compilation'
     };
   }
 
   apply(compiler: Compiler) {
-    compiler.hooks.compilation.tap(PluginTitle, compilation => {
-      compilation.hooks.optimizeModules.tap(PluginTitle, modules => {
-        this.options.onStart({ compilation });
-
-        console.log(blue(PluginTitle), greenBright('start analyze'));
-        console.time(blue(PluginTitle));
-
-        const graph = this.webpackDependencyGraph(compilation, modules as Iterable<NormalModule>);
-
-        cycleDetector(graph, cycle => {
-          // print modules as paths in error messages
-          const cyclicalPaths = cycle.map(module => relative(this.options.cwd, module.resource));
-          try {
-            this.options.onDetected({
-              paths: cyclicalPaths,
-              compilation: compilation
-            });
-          } catch (err) {
-            compilation.errors.push(err);
-          }
+    if (this.options.webpackHook === 'compilation') {
+      compiler.hooks.compilation.tap(PluginTitle, compilation => {
+        compilation.hooks.optimizeModules.tap(PluginTitle, modules => {
+          this.analyze(compilation, modules as Iterable<NormalModule>);
         });
-
-        this.options.onEnd({ compilation });
-        console.timeEnd(blue(PluginTitle));
-        console.log(blue(PluginTitle), green('complete'));
       });
-    });
+    } else {
+      compiler.hooks.make.tapAsync(PluginTitle, (compilation, cb) => {
+        compilation.hooks.afterOptimizeModules.tap(PluginTitle, modules => {
+          this.analyze(compilation, modules as Iterable<NormalModule>);
+        });
+        cb();
+      });
+    }
   }
+
+  analyze = (compilation: Compilation, modules: Iterable<NormalModule>) => {
+    this.options.onStart({ compilation });
+
+    this.log(blue(PluginTitle), greenBright('start analyze'));
+    this.logTime(blue(PluginTitle));
+
+    const graph = this.webpackDependencyGraph(compilation, modules);
+
+    this.cycleDetector(graph, cycle => {
+      // print modules as paths in error messages
+      const cyclicalPaths = cycle.map(module => relative(this.options.cwd, module.resource));
+      try {
+        this.options.onDetected({
+          paths: cyclicalPaths,
+          compilation: compilation
+        });
+      } catch (err) {
+        compilation.errors.push(err);
+      }
+    });
+
+    this.options.onEnd({ compilation });
+    this.logTimeEnd(blue(PluginTitle));
+    this.log(blue(PluginTitle), green('complete'));
+  };
 
   webpackDependencyGraph = (compilation: Compilation, modules: Iterable<NormalModule>): Graph => {
     // vertices of the dependency graph are the modules
@@ -104,19 +119,35 @@ class CircularDependencyPlugin {
 
     return { vertices, arrow };
   };
-}
 
-const cycleDetector = (graph: Graph, cycleCallback: (cycle: NormalModule[]) => void) => {
-  const [noCycl, modules] = isAcyclic(graph);
-  console.log(blue(PluginTitle), noCycl ? green('no cycle imports') : red('found cycle imports -> processing'));
+  cycleDetector = (graph: Graph, cycleCallback: (cycle: NormalModule[]) => void) => {
+    const [noCycl, modules] = isAcyclic(graph);
+    this.log(blue(PluginTitle), noCycl ? green('no cycle imports') : red('found cycle imports -> processing'));
 
-  for (const module of modules) {
-    const cycle = findModuleCycleAt(module, module, {}, graph.arrow);
-    if (cycle) {
-      cycleCallback(cycle);
+    for (const module of modules) {
+      const cycle = findModuleCycleAt(module, module, {}, graph.arrow);
+      if (cycle) {
+        cycleCallback(cycle);
+      }
     }
-  }
-};
+  };
+
+  log = (...texts: unknown[]) => {
+    if (this.options.disableLogs) return;
+
+    console.log(...texts);
+  };
+  logTime = (label: string) => {
+    if (this.options.disableLogs) return;
+
+    console.time(label);
+  };
+  logTimeEnd = (label: string) => {
+    if (this.options.disableLogs) return;
+
+    console.timeEnd(label);
+  };
+}
 
 const findModuleCycleAt = (
   initialModule: NormalModule,

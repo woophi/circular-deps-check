@@ -7,6 +7,8 @@ export interface Options {
   exclude: RegExp;
   include: RegExp;
   cwd: string;
+  disableLogs: boolean;
+  webpackHook: 'make' | 'compilation';
 }
 
 export interface Graph {
