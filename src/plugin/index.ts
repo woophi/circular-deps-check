@@ -1,6 +1,6 @@
 // Copyright (c) 2016, Aaron Ackerman <theron17@gmail.com>
 const PluginTitle = 'CircularDependencyPlugin';
-import chalk from 'chalk';
+import { blue, green, greenBright, red } from 'chalk';
 import { relative } from 'path';
 import { Compilation, Compiler, NormalModule } from 'webpack5';
 import { isAcyclic } from './checkCircle';
@@ -25,8 +25,8 @@ class CircularDependencyPlugin {
       compilation.hooks.optimizeModules.tap(PluginTitle, modules => {
         this.options.onStart({ compilation });
 
-        console.log(chalk.blue(PluginTitle), chalk.greenBright('start analyze'));
-        console.time(chalk.blue(PluginTitle));
+        console.log(blue(PluginTitle), greenBright('start analyze'));
+        console.time(blue(PluginTitle));
 
         const graph = this.webpackDependencyGraph(compilation, modules as Iterable<NormalModule>);
 
@@ -44,8 +44,8 @@ class CircularDependencyPlugin {
         });
 
         this.options.onEnd({ compilation });
-        console.timeEnd(chalk.blue(PluginTitle));
-        console.log(chalk.blue(PluginTitle), chalk.green('complete'));
+        console.timeEnd(blue(PluginTitle));
+        console.log(blue(PluginTitle), green('complete'));
       });
     });
   }
@@ -108,10 +108,7 @@ class CircularDependencyPlugin {
 
 const cycleDetector = (graph: Graph, cycleCallback: (cycle: NormalModule[]) => void) => {
   const [noCycl, modules] = isAcyclic(graph);
-  console.log(
-    chalk.blue(PluginTitle),
-    noCycl ? chalk.green('no cycle imports') : chalk.red('found cycle imports -> processing')
-  );
+  console.log(blue(PluginTitle), noCycl ? green('no cycle imports') : red('found cycle imports -> processing'));
 
   for (const module of modules) {
     const cycle = findModuleCycleAt(module, module, {}, graph.arrow);
