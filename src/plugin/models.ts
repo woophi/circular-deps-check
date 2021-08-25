@@ -1,4 +1,4 @@
-import { Compilation, NormalModule } from 'webpack';
+import { Compilation, NormalModule } from 'webpack5';
 
 export interface Options {
   onStart: (cr: { compilation: Compilation }) => void;

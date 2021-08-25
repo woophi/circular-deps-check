@@ -2,14 +2,14 @@
 const PluginTitle = 'CircularDependencyPlugin';
 import chalk from 'chalk';
 import { relative } from 'path';
-import { Compilation, Compiler, NormalModule } from 'webpack';
+import { Compilation, Compiler, NormalModule } from 'webpack5';
 import { isAcyclic } from './checkCircle';
 import { Graph, Options } from './models';
 import { noop } from './utils';
 
 class CircularDependencyPlugin {
   protected options: Options;
-  constructor(options: Options) {
+  constructor(options: Partial<Options>) {
     this.options = {
       onStart: options.onStart ?? noop,
       onEnd: options.onEnd ?? noop,

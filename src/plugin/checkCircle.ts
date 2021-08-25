@@ -1,4 +1,4 @@
-import { NormalModule } from 'webpack';
+import { NormalModule } from 'webpack5';
 import { Graph } from './models';
 
 /**
