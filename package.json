@@ -20,5 +20,8 @@
     "testMatch": [
       "**/?(*.)(spec|test).ts?(x)"
     ]
+  },
+  "dependencies": {
+    "chalk": "^4.1.2"
   }
 }
