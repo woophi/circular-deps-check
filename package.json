@@ -2,14 +2,27 @@
   "name": "circular-deps-check",
   "version": "1.0.0",
   "description": "Detect circular dependencies in modules",
-  "main": "index.js",
   "repository": "git@github.com:woophi/circular-deps-check.git",
   "author": "konst <attendentofsky@gmail.com>",
   "license": "MIT",
+  "keywords": [
+    "fast",
+    "plugin",
+    "typescript",
+    "webpack"
+  ],
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
+    "prepublish": "yarn test && yarn build:ts",
+    "build:ts": "tsc --project tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage"
+    "test:cov": "jest --coverage",
+    "release": "release-it"
   },
   "peerDependencies": {
     "webpack": ">=4.0.1"
@@ -23,6 +36,7 @@
     "babel-jest": "^27.0.6",
     "jest": "^27.0.6",
     "memory-fs": "^0.5.0",
+    "release-it": "^14.11.5",
     "ts-loader": "^9.2.5",
     "typescript": "^4.3.5",
     "webpack": "^4.0.1",
