@@ -24,7 +24,7 @@ This is the same plugin as [here](https://github.com/aackerman/circular-dependen
 
 ```js
 // webpack.config.js
-const CircularDependencyPlugin = require('circular-dependency-plugin')
+const CircularDependencyPlugin = require('circular-deps-check')
 
 module.exports = {
   entry: "./src/index",
